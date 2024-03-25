@@ -6,7 +6,7 @@ def create_database(name: str):
     cur = con.cursor()
 
     cur.execute("CREATE TABLE user(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, active INTEGER)")
-    cur.execute("CREATE TABLE message(sender_id INTEGER PRIMARY KEY, recipient_id INTEGER, message TEXT, date TEXT)")
+    cur.execute("CREATE TABLE message(id INTEGER PRIMARY KEY, sender_id INTEGER, recipient_id INTEGER, message TEXT, date TEXT)")
 
     con.commit()
     con.close()

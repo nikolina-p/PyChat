@@ -1,4 +1,4 @@
-from hashlib import sha256
+import datetime
 
 from domain import User, Message
 
@@ -78,14 +78,26 @@ class DomainController:
             self.code = "Error when deactivating user"
         return False
 
-    def hash_id(self, id):
-        return sha256(str(id).encode()).hexdigest()
+    def load_messages(self, id) -> list:
+        message = Messages(id)
 
-    def unhash_secret(self, secret):
-        hash_bytes = bytes.fromhex(secret)
-        original_bytes = sha256(hash_bytes).digest()
-        user_id = int.from_bytes(original_bytes, byteorder='big')
-        return user_id
+    def received_message(self, from_id, to_id, message) -> list:
+        from_user = User()
+        from_user.get_user(id=from_id)
+
+        to_user = User()
+        to_user.get_user(id=to_id)
+
+        message = Message(from_user, to_user, message, datetime.datetime.now())
+        if message.saveMessage():
+            self.response_ok = True
+            self.code = "New message saved"
+        else:
+            self.response_ok = False
+            self.code = "Problem saving message"
+        return self.response_ok
+
+
 
 
 if __name__ == "__main__":

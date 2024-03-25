@@ -12,7 +12,7 @@ html, body {
 #left {
     width: 80%;
     height: 100%;
-    float: left; 
+    float: left;
     position: relative;
     background-color: aquamarine;
 }
@@ -91,16 +91,15 @@ html, body {
     border-radius: 10px;
     background-color: white;
     padding: 10px;
-    height: calc(85% - 40px);
+    height: calc(83% - 40px);
     overflow-y: auto;
     margin: 10px
 }
 
-#message-list {
-    list-style-type: none;
-    margin: 10px;
-    padding: 0;
-    border: 5px aqua;
+#talking-to {
+    margin-left: 20px;
+    margin-top: 10px;
+    font-style: oblique;
 }
 
 /* typing container */
@@ -152,6 +151,13 @@ textarea {
 
 }
 
+#message-list {
+    list-style-type: none;
+    margin: 10px;
+    padding: 0;
+    border: 5px aqua;
+}
+
 .message {
   margin-bottom: 10px;
   padding: 5px 10px;
@@ -166,4 +172,8 @@ textarea {
 .received {
   background-color: #E8E8E8;
   float: left;
+}
+
+.message-container {
+  clear: both;
 }

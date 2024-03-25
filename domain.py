@@ -1,4 +1,5 @@
-from dbcontroler import UserController
+from dbcontroler import UserDBController, MessageDBController
+
 import datetime
 
 
@@ -8,7 +9,7 @@ class User:
         self.username = username
         self.password = password
         self.active = active
-        self.db_controller = UserController()
+        self.db_controller = UserDBController()
 
     def create(self):
         result = self.db_controller.create(self.username, self.password, self.active)
@@ -77,3 +78,11 @@ class Message:
         self.recipient = recipient
         self.content = content
         self.date = date
+        self.db_controller = MessageDBController()
+
+    def saveMessage(self):
+        id = self.db_controller.create(self.sender.id, self.recipient.id, self.content, self.date)
+        if id != -1:
+            return True
+        else:
+            return False

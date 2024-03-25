@@ -9,12 +9,14 @@ window.addEventListener("DOMContentLoaded", () => {
     window.user = {
       id: -1,
       username: -1,
-      session: secValue
+      session: secValue,
+      socket: websocket,
+      talkig_to: -1
     };
 
     const login = {
       action: "on-load",
-      secret: secValue
+      session: secValue
     };
     websocket.send(JSON.stringify(login));
   });
@@ -50,6 +52,25 @@ function receiveMessages(websocket) {
         console.log("USER LOGGED OUT "+ message.userid)
         activateUser(message.userid, false)
         break;
+
+      case "load-friend":
+        console.log("LOAD FRIEND:: " + message.user.id + " " + message.user.username+ " " + message.user.active)
+        window.user.talkig_to = message.user.id
+        renderTalkingTo(message.user)
+
+      case "message-received":
+        console.log("NEW MESSAGE: " + message.from_id + " " + message.message)
+        // if user is in talking-to, just append message to te message board
+        if (window.user.talkig_to === message.from_id) {
+          addMessage(false, message.message)
+        }
+        // if user is not in talking-to, make it blue and add blie dot and maybe small popup "new message"
+
+      case "receipt-confirmation":
+        if (message.success == "success") {
+          addMessage(true, message.message);
+        }
+
     }
   });
 }
@@ -62,14 +83,13 @@ function sendMessages(websocket) {
 
     let myTextArea = document.getElementById("typing")
     let msg = myTextArea.value
-    myTextArea.innerText = " "
-    myTextArea.innerHTML = " "
-    myTextArea.value = " "
-
-    let username = document.getElementById("username").innerText
+    myTextArea.value = ""
 
     let response = {
-      id: username,
+      action: "message-sent",
+      session: window.user.session,
+      from: window.user.id,
+      to: window.user.talkig_to,
       message: msg
     };
     console.log("Mgs:", msg)
@@ -82,19 +102,22 @@ function windowClose(websocket) {
     console.log("beforeunload ::  window.user.id = "+window.user.id)
     if (window.user.id != -1){
       var response = {
-      action: 'logout',
-      session: window.user.session,
-      userid: window.user.id
+        action: 'logout',
+        session: window.user.session,
+        userid: window.user.id
       }
       websocket.send(JSON.stringify(response));
     }
-
-
   })
 }
 function addMessage(isSent, text) {
   const messagesList = document.getElementById("messages-list");
+
+  const messageContainer = document.createElement("div");
+  messageContainer.classList.add("message-container");
+
   const messageElement = document.createElement("li");
+
   messageElement.textContent = text;
   messageElement.classList.add("message");
   if (isSent) {
@@ -102,7 +125,12 @@ function addMessage(isSent, text) {
   } else {
     messageElement.classList.add("received");
   }
-  messagesList.appendChild(messageElement);
+  messageContainer.appendChild(messageElement); // Append the li to the div
+  messagesList.appendChild(messageContainer);
+
+  // Add a line break after each message
+  const lineBreak = document.createElement("br");
+  messagesList.appendChild(lineBreak);
 }
 
 function renderUser(user) {
@@ -142,8 +170,15 @@ function appendUser(userlistDiv, user) {
 
       // Add click event listener to each user element
   userDiv.addEventListener('click', () => {
-        // Do something when user is clicked
     console.log('Clicked on user:', user);
+
+    let response = {
+      "action": "load-friend",
+      "session": window.user.session,
+      "userid": user.id
+    }
+
+    window.user.socket.send(JSON.stringify(response));
   });
 
   userlistDiv.appendChild(userDiv);
@@ -166,4 +201,41 @@ function activateUser(id, active) {
       userDiv.classList.add('inactive');
     }
   }
+}
+
+function renderTalkingTo(user) {
+  let div = document.getElementById("talking-to")
+  div.innerText = user.username + " :: "
+
+  let typingTextarea = document.getElementById("typing")
+
+  if (user.active == 0) {
+    textareaFriendNotActive(typingTextarea)
+  }
+}
+
+function textareaFriendNotActive(typingTextarea) {
+    // inform the user that friend is not active
+    var inactiveFriend = "The user is not active at the moment. They might not see your message imediatelly..."
+    typingTextarea.value = inactiveFriend;
+    typingTextarea.style.color = '#999';
+    typingTextarea.style.fontStyle = 'italic';
+
+    typingTextarea.addEventListener('focus', function() {
+        // Clear the textarea when it gains focus if it contains the default text
+        if (typingTextarea.value === inactiveFriend) {
+            typingTextarea.value = '';
+            typingTextarea.style.color = '';
+            typingTextarea.style.fontStyle = '';
+        }
+    });
+
+    typingTextarea.addEventListener('blur', function() {
+      // do the same thing when textarea again loses focus
+        if (typingTextarea.value === '') {
+            typingTextarea.value = inactiveFriend;
+            typingTextarea.style.color = '#999';
+            typingTextarea.style.fontStyle = 'italic';
+        }
+    });
 }

@@ -47,7 +47,7 @@ class dbcontroller:
         return result
 
 
-class UserController(dbcontroller):
+class UserDBController(dbcontroller):
 
     def create(self, username, pwd, active):
         query = f"INSERT INTO user (username, password, active) VALUES (?, ?, ?)"
@@ -107,6 +107,24 @@ class UserController(dbcontroller):
             result = self.cursor.fetchall()
         self.close()
 
+        return result
+
+
+class MessageDBController(dbcontroller):
+
+    def create(self, from_id, to_id, message, datetime):
+        create = f"INSERT INTO message (sender_id, recipient_id, message, date) VALUES (?, ?, ?, ?)"
+
+        values = (from_id, to_id, message, datetime)
+
+        self.db_open()
+
+        if self.execute([(create, values)]):
+            result = self.cursor.lastrowid
+            print("Last row id: ", result)
+        else:
+            result = -1
+        self.close()
         return result
 
 

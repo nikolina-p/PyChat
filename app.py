@@ -6,10 +6,9 @@ import json
 from domaincontroller import DomainController
 import uuid
 
-# dictionary {sessionId: (websocket, userid)}
-sessions = {}
-# {user_id: socket}
-active_users = {}
+
+sessions = {}    # dictionary {sessionId: user ID}
+active_users = {}    # {user_id: socket}
 domaincontroller = DomainController()
 counter = 0
 
@@ -86,8 +85,8 @@ async def handler(websocket):
                         await clientsocket.send(json.dumps(response))
 
         if message_dict["action"] == "on-load":
-            if message_dict["secret"] in sessions.keys():
-                valid_session_id = message_dict["secret"]
+            if message_dict["session"] in sessions.keys():
+                valid_session_id = message_dict["session"]
                 usr_id = sessions[valid_session_id]
                 sessions.pop(session_id)    # remove new session_id
                 sessions[valid_session_id] = usr_id
@@ -124,6 +123,65 @@ async def handler(websocket):
                 for socket in active_users.values():
                     print(">>>>Inform everybody GASI SE!!! ==> ", socket)
                     await socket.send(json.dumps(response))
+
+        if message_dict["action"] == "load-friend":
+            print("\n>>>> OD CLIENT-a load-friend: ", message_dict)
+            if message_dict["session"] in sessions:
+                user = domaincontroller.load_user(message_dict["userid"])
+                # messages = domaincontroller.load_messages(message_dict["userid"])
+                if domaincontroller.response_ok:
+                    response = {
+                        "action": "load-friend",
+                        "user": user,
+                        "messages": "messages - to be developed"
+                    }
+                else:
+                    response = {"action": "error", "msg": domaincontroller.code}
+            else:
+                response = {"action": "error", "msg": "Session not valid"}
+            await websocket.send(json.dumps(response))
+
+        if message_dict["action"] == "message-sent":
+            # current websocket is sending message to a friend
+            print("\n>>>> OD CLIENT-b message :: ", message_dict)
+            if message_dict["session"] in sessions:
+                sgn = domaincontroller.received_message(message_dict["from"],
+                                                        message_dict["to"],
+                                                        message_dict["message"])
+                if message_dict["to"] in active_users:
+                    # if recipient in active_users
+                    socket = active_users[message_dict["to"]]
+                    if sgn:
+                        # and if message saved in DB, forward message to the recipient and inform sender of success
+                        forward_response = {
+                            "action": "message-received",
+                            "from_id": message_dict["from"],
+                            "message": message_dict["message"],
+                        }
+                        response = {
+                            "action": "receipt-confirmation",
+                            "success": "success",
+                            "message": message_dict["message"]
+                        }
+                        await socket.send(json.dumps(forward_response))
+                    else:
+                        # inform sender of failure to send (save msg in DB)
+                        response = {
+                            "action": "receipt-confirmation",
+                            "success": "fail",
+                            "message": message_dict["message"]
+                        }
+                else:
+                    if sgn:
+                        # recipient not online, but message successfuly saved
+                        response = {
+                            "action": "receipt-confirmation",
+                            "success": "will be delivered later",
+                            "message": message_dict["message"]
+                        }
+            else:
+                response = {"action": "error", "msg": "Session not valid"}
+            await websocket.send(json.dumps(response))
 
         if message_dict["action"] == "message":
             for id, socket in active_users.items():
