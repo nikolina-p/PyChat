@@ -1,0 +1,181 @@
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+#left, #right {
+    height: 100%;
+    float: left;
+}
+
+#left {
+    width: 80%;
+    height: 100%;
+    float: left; /* Float the left div to the left */
+    position: relative;
+    background-color: aquamarine;
+}
+
+#right {
+    width: 20%;
+    float: left; /* Float the right div to the left */
+    background-color: aquamarine;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* USERS CONTAINER */
+
+#my-profile {
+    width: 80%;
+    background-color: white;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden; /* To clip the image */
+    text-align: center; /* Center align text */
+  }
+
+#my-name,
+  #my-photo {
+    width: calc(70% - 5px); /* Subtracting 5px for margin between elements */
+    margin: 0 auto;
+  }
+
+#my-name {
+    text-align: center;
+    line-height: 100px; /* Align text vertically */
+    margin-top: 10px;
+  }
+
+#my-photo {
+    margin-top: 10px;
+    position: relative; /* Reset to default positioning */
+ }
+
+#my-photo img {
+    display: block;
+    margin: 0 auto;
+    border-radius: 50%;
+    width: 100%; /* Adjust size as needed */
+    height: auto;
+    max-width: 100%; /* Ensure photo does not exceed container */
+     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%)
+  }
+
+#userlist {
+    /*height: 70%;  Adjust height as needed */
+    width: 80%;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    overflow-y: auto;
+  }
+
+.user {    /* small div containing username  */
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    cursor: pointer;
+    background-color: #b6fff2;
+  }
+
+.user:last-child {
+    border-bottom: none;
+ }
+
+.inactive {
+    background: beige;
+    color: gray;
+}
+
+/*  CHAT CONTAINER */
+
+#chat-container {
+    position: relative;
+    width: calc(100% - 40px); /* Occupy full width of the #left container */
+    border: 1px solid aqua; /* Add border with color aqua */
+    border-radius: 10px; /* Add rounded corners */
+    background-color: white; /* Set white background */
+    padding: 10px; /* Add padding */
+    height: calc(85% - 40px);
+    overflow-y: auto; /* Enable vertical scroll */
+    margin: 10px
+}
+
+#message-list {
+    list-style-type: none; /* Remove default list styling */
+    margin: 10px; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+    border: 5px aqua;
+}
+
+/* typing container */
+
+#typing-container {
+    position: absolute;
+    bottom: 0;
+    height: 15%;
+    width: 100%;
+    flex: 0;
+    background-color: aquamarine; /* Example color for the typing div */
+    display: flex;
+    flex-direction: column; /* Arrange children vertically */
+    align-items: center; /* Horizontally center the child elements */
+}
+
+#typing-div,
+#send-div {
+    width: calc(100% - 20px); /* Adjust width to leave space for margins */
+    margin: 5px 0; /* Add margin between elements */
+}
+#typing-div {
+    flex: 1; /* Occupy remaining space */
+}
+
+textarea {
+    width: 100%; /* Occupy the entire width of the parent */
+    height: 100%; /* Occupy the entire height of the parent */
+    resize: none; /* Prevent textarea from being resized */
+    padding: 5px; /* Add padding to textarea */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+#send-div {
+    flex: 0; /* Do not grow */
+    margin-left: 10px; /* Adjust margin between textarea and button */
+    align-items: center;
+}
+
+#sendbtt {
+    width: 95%;
+    margin-left: 2%;
+    background-color: #b6fff2;
+    border-width: 1px;
+    border-radius: 5px;
+}
+
+#chat-container {
+
+}
+
+.message {
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  border-radius: 10px;
+}
+
+.sent {
+  background-color: #DCF8C6; /* Example color for sent messages */
+  float: right;
+}
+
+.received {
+  background-color: #E8E8E8; /* Example color for received messages */
+  float: left;
+}
