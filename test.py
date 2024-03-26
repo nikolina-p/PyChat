@@ -37,6 +37,11 @@ def empty_user_table():
     result = user.delete_all()
     print(result)
 
+def empty_message_table():
+    m = Message()
+    result = m.delete_all()
+    print(result)
+
 def query_db():
     dbcont = UserController()
     result = dbcont.get_all_users()
@@ -76,14 +81,14 @@ def fill_up_messages():
 
     insert = f"INSERT INTO message (sender_id, recipient_id, message, date) VALUES (?, ?, ?, ?)"
 
-    recipient = -1
-    for id in ids:
-        for i in range(len(messages_str)//2):
-            values = (id[0], ids[recipient][0], messages_str[i], str(datetime.datetime.now()))
-            cursor.execute(insert, values)
-        for i in range(len(messages_str)//2, len(messages_str)):
-            values = (ids[recipient][0], id[0], messages_str[i], str(datetime.datetime.now()))
-            cursor.execute(insert, values)
+    for x in range(10):
+        i = 0
+        for sender in ids:
+            for receiver in ids:
+                if sender != receiver:
+                    values = (sender[0], receiver[0], messages_str[i], str(datetime.datetime.now()))
+                    cursor.execute(insert, values)
+                    i = (i + 1) if i < len(messages_str) - 1 else 0
 
     conn.commit()
     conn.close()
@@ -117,6 +122,13 @@ def select_messages():
     for item in msgs:
         print(item)
 
+def get_conversations():
+    """gets the list of messages exchanged between two users"""
+    m = Message()
+    conv = m.get_conversation(User(id=13), User(id=12))
+    for c in conv:
+        print(c)
+
 
 if __name__ == "__main__":
     print("Hello World")
@@ -127,13 +139,11 @@ if __name__ == "__main__":
     #update()
     #print_users()
     #query_db()
-    #unactivate_users()
+    unactivate_users()
     #fill_up_messages()
-    select_messages()
+    #select_messages()
+    #empty_message_table()
+    #get_conversations()
 
-    """d1 = datetime.datetime.now()
-    d2 = datetime.datetime.now() + datetime.timedelta(hours=2)
-    d3 = datetime.datetime.now() + datetime.timedelta(5)
 
-    print(datetime.datetime.now() + datetime.timedelta(hours=3))"""
 

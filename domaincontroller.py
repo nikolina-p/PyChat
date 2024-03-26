@@ -78,9 +78,6 @@ class DomainController:
             self.code = "Error when deactivating user"
         return False
 
-    def load_messages(self, id) -> list:
-        message = Messages(id)
-
     def received_message(self, from_id, to_id, message) -> list:
         from_user = User()
         from_user.get_user(id=from_id)
@@ -97,7 +94,28 @@ class DomainController:
             self.code = "Problem saving message"
         return self.response_ok
 
+    def load_conversation(self, id_1, id_2) -> dict:
+        user_1 = User()
+        user_2 = User()
+        # check if they exist
+        if user_1.get_user(id=id_1) and user_2.get_user(id=id_2):
+            msg = Message()
+            response = msg.get_conversation(user_1, user_2)
+            print("\n\n>>>>>>>>RESPONSE: ", response)
 
+            msg_dict = {}
+            if response != -1:
+                # prepare the data for sending via websocket
+                for message in response:
+                    msg_dict[message[0]] = list(message)
+                self.response_ok = True
+                self.code = "Conversation loaded"
+            else:
+                # returned -1, DB problem
+                self.response_ok = False
+                self.code = "Problem loading messages from DB"
+
+            return msg_dict
 
 
 if __name__ == "__main__":

@@ -127,6 +127,19 @@ class MessageDBController(dbcontroller):
         self.close()
         return result
 
+    def get_conversation(self, user_1, user_2):
+        query = (f"SELECT * FROM message WHERE (sender_id = ? and recipient_id = ?) "
+                 f"or (sender_id = ? and recipient_id = ?) order by id ASC ")
+        values = (user_1, user_2, user_2, user_1)
+
+        self.db_open()
+        if self.execute([(query, values)]):
+            result = self.cursor.fetchall()
+        else:
+            result = -1
+        self.close()
+        return result
+
 
 
 

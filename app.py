@@ -10,7 +10,8 @@ import uuid
 sessions = {}    # dictionary {sessionId: user ID}
 active_users = {}    # {user_id: socket}
 domaincontroller = DomainController()
-counter = 0
+counter = 0  # counts the number of websockets created - for control purposes
+current_user = None
 
 async def handler(websocket):
     global counter
@@ -86,19 +87,19 @@ async def handler(websocket):
 
         if message_dict["action"] == "on-load":
             if message_dict["session"] in sessions.keys():
-                valid_session_id = message_dict["session"]
+                valid_session_id = message_dict["session"] # we will use the "old" session created before sign in
                 usr_id = sessions[valid_session_id]
                 sessions.pop(session_id)    # remove new session_id
                 sessions[valid_session_id] = usr_id
 
                 users = domaincontroller.load_users()
-                user = domaincontroller.load_user(usr_id)
+                current_user = domaincontroller.load_user(usr_id)
 
-                active_users[user["id"]] = websocket
+                active_users[current_user["id"]] = websocket
                 response = {
                     "action": "on-load",
                     "users": users,
-                    "user": user
+                    "user": current_user
                 }
             else:
                 response = {"action": "error", "msg": "Session not valid"}
@@ -127,18 +128,14 @@ async def handler(websocket):
         if message_dict["action"] == "load-friend":
             print("\n>>>> OD CLIENT-a load-friend: ", message_dict)
             if message_dict["session"] in sessions:
-                user = domaincontroller.load_user(message_dict["userid"])
-                # messages = domaincontroller.load_messages(message_dict["userid"])
-                if domaincontroller.response_ok:
-                    response = {
-                        "action": "load-friend",
-                        "user": user,
-                        "messages": "messages - to be developed"
-                    }
-                else:
-                    response = {"action": "error", "msg": domaincontroller.code}
+                response = {}
+                # fill the response with friend's data
+                if load_user(message_dict["userid"], response):
+                    # add conversation messages with the friend
+                    sgn = load_conversation(message_dict["userid"], message_dict["current_id"], response)
             else:
                 response = {"action": "error", "msg": "Session not valid"}
+            print("==========VELIKI RESPONSE==========: \n",response)
             await websocket.send(json.dumps(response))
 
         if message_dict["action"] == "message-sent":
@@ -192,6 +189,28 @@ async def handler(websocket):
 async def main():
     async with websockets.serve(handler, "", 8022):
         await asyncio.Future()  # run forever
+
+
+def load_user(user_id: int, response: dict) -> bool:
+    user = domaincontroller.load_user(user_id)
+    # messages = domaincontroller.load_messages(message_dict["userid"])
+    if domaincontroller.response_ok:
+        response["action"] = "load-friend"
+        response["user"] = user
+        return True
+    else:
+        response = {"action": "error", "msg": domaincontroller.code}
+        return False
+
+def load_conversation(user_id: int, current_id: int, response: dict) -> bool:
+    # load the conversation between current user and requested id
+    msg_dict = domaincontroller.load_conversation(current_id, user_id)
+    if domaincontroller.response_ok:
+        response["conversation"] = msg_dict
+        return True
+    else:
+        response = {"action": "error", "msg": domaincontroller.code}
+    return False
 
 
 if __name__ == "__main__":

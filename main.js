@@ -56,7 +56,8 @@ function receiveMessages(websocket) {
       case "load-friend":
         console.log("LOAD FRIEND:: " + message.user.id + " " + message.user.username+ " " + message.user.active)
         window.user.talkig_to = message.user.id
-        renderTalkingTo(message.user)
+        renderTalkingTo(message.user);
+        renderConversation(message.conversation)
         break;
 
       case "message-received":
@@ -76,6 +77,9 @@ function receiveMessages(websocket) {
         }
         break;
 
+      case "load-conversation":
+        let conversation = message.conversation
+        console.print(conversation)
     }
   });
 }
@@ -180,7 +184,8 @@ function appendUser(userlistDiv, user) {
     let response = {
       "action": "load-friend",
       "session": window.user.session,
-      "userid": user.id
+      "userid": user.id,
+      "current_id": window.user.id
     }
 
     window.user.socket.send(JSON.stringify(response));
@@ -263,4 +268,18 @@ function addNewMessageIndicator(id) {
 
     // Append the new message indicator next to the div's text
     targetDiv.appendChild(newMessageIndicator);
+}
+
+function renderConversation(conversation) {
+  for (let key in conversation) {
+    if (conversation.hasOwnProperty(key)) {
+      const msg = conversation[key];
+      let sgn = true
+      if (msg[1] !== window.user.id) {
+        // if the message is received
+        sgn = false
+      }
+      addMessage(sgn, msg[3])
+    }
+  }
 }

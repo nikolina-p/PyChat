@@ -73,7 +73,7 @@ class User:
 
 
 class Message:
-    def __init__(self, sender: User, recipient: User, content: str, date: datetime):
+    def __init__(self, sender: User=None, recipient: User=None, content: str="", date: datetime=None):
         self.sender = sender
         self.recipient = recipient
         self.content = content
@@ -86,3 +86,13 @@ class Message:
             return True
         else:
             return False
+
+    def delete_all(self):
+        result = self.db_controller.delete_all("message")
+        return result
+
+    def get_conversation(self, user_1: User=None, user_2: User=None) -> dict:
+        return self.db_controller.get_conversation(user_1.id, user_2.id)
+
+
+
