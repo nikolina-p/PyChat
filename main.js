@@ -57,19 +57,24 @@ function receiveMessages(websocket) {
         console.log("LOAD FRIEND:: " + message.user.id + " " + message.user.username+ " " + message.user.active)
         window.user.talkig_to = message.user.id
         renderTalkingTo(message.user)
+        break;
 
       case "message-received":
         console.log("NEW MESSAGE: " + message.from_id + " " + message.message)
-        // if user is in talking-to, just append message to te message board
+        // if user is in talking-to (chat with him/her is open), just append message to te message board
         if (window.user.talkig_to === message.from_id) {
           addMessage(false, message.message)
+        } else {
+          // if user is not in talking-to, make the sender blue and add blie dot and maybe small popup "new message"
+          addNewMessageIndicator(message.from_id)
         }
-        // if user is not in talking-to, make it blue and add blie dot and maybe small popup "new message"
+        break;
 
       case "receipt-confirmation":
         if (message.success == "success") {
           addMessage(true, message.message);
         }
+        break;
 
     }
   });
@@ -212,6 +217,12 @@ function renderTalkingTo(user) {
   if (user.active == 0) {
     textareaFriendNotActive(typingTextarea)
   }
+
+  let userDiv = document.getElementById(user.id)
+  userDiv.style.color = "#000000"
+  // remove new-message-indicator
+  userDiv.innerHTML = ""
+  userDiv.innerText = user.username
 }
 
 function textareaFriendNotActive(typingTextarea) {
@@ -238,4 +249,18 @@ function textareaFriendNotActive(typingTextarea) {
             typingTextarea.style.fontStyle = 'italic';
         }
     });
+}
+
+function addNewMessageIndicator(id) {
+  console.log("ID div sender: "+id);
+    // Make sender blue
+    var targetDiv = document.getElementById(id);
+    targetDiv.style.color = '#87b5fa'
+
+    var newMessageIndicator = document.createElement("span");
+    newMessageIndicator.textContent = "New message";
+    newMessageIndicator.classList.add("new-message-indicator");
+
+    // Append the new message indicator next to the div's text
+    targetDiv.appendChild(newMessageIndicator);
 }

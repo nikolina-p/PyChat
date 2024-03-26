@@ -82,6 +82,12 @@ html, body {
     color: gray;
 }
 
+.new-message-indicator {
+    color: gray;
+    font-size: 12px;
+    margin-left: 5px;
+  }
+
 /*  CHAT CONTAINER */
 
 #chat-container {

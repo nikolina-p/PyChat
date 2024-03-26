@@ -1,6 +1,6 @@
 from domain import User, Message
 import sqlite3
-from dbcontroler import UserController
+from dbcontroler import UserDBController
 import os
 import datetime
 
@@ -129,12 +129,11 @@ if __name__ == "__main__":
     #query_db()
     #unactivate_users()
     #fill_up_messages()
-    #select_messages()
+    select_messages()
 
-    d1 = datetime.datetime.now()
+    """d1 = datetime.datetime.now()
     d2 = datetime.datetime.now() + datetime.timedelta(hours=2)
     d3 = datetime.datetime.now() + datetime.timedelta(5)
 
-
-    print(datetime.datetime.now() + datetime.timedelta(hours=3))
+    print(datetime.datetime.now() + datetime.timedelta(hours=3))"""
 
