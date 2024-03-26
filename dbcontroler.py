@@ -57,7 +57,6 @@ class UserDBController(dbcontroller):
 
         if self.execute([(query, values)]):
             result = self.cursor.lastrowid
-            print("Last row id: ", result)
         else:
             result = -1
         self.close()
@@ -68,8 +67,6 @@ class UserDBController(dbcontroller):
         for key, value in kvargs.items():
             query += f"{key} = '{value}' AND "
         query = query[:-5]
-
-        print(query)
 
         self.db_open()
         self.execute([(query, None)])
@@ -98,6 +95,7 @@ class UserDBController(dbcontroller):
         self.close()
         return sgn
 
+
     def get_all_users(self):
         query = f"SELECT * FROM user"
 
@@ -121,7 +119,6 @@ class MessageDBController(dbcontroller):
 
         if self.execute([(create, values)]):
             result = self.cursor.lastrowid
-            print("Last row id: ", result)
         else:
             result = -1
         self.close()
@@ -139,9 +136,3 @@ class MessageDBController(dbcontroller):
             result = -1
         self.close()
         return result
-
-
-
-
-
-

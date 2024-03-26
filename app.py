@@ -18,35 +18,30 @@ async def handler(websocket):
     counter += 1
     session_id = str(uuid.uuid4())
     sessions[session_id] = -1
-    print(f"\nClient {counter} connected.")
-    print("All SESSIONS: ", sessions)
 
     while True:
         try:
             message = await websocket.recv()
         except websockets.ConnectionClosed:
             print(f"Client (({websocket})) disconnected.")
-            # izbrisati socket iz active_users{}
             break
-        print(f"\nReceived message from Client {websocket}: {message}")
+
         message_dict = json.loads(message)
 
         if message_dict["action"] == "signup":
             user = domaincontroller.signup(message_dict["username"], message_dict["password"])
             if domaincontroller.response_ok:
                 sessions[session_id] = user["id"]
-                print(f"   .....Preparin to sign in {user["username"]}")
+
                 response = {
                     "action": "routing",
                     "url": "http://localhost:8000/chatboard.html?sec="+session_id,
                 }
             else:
-                print("Not SIGNED UP!")
                 response = {
                     "action": "error",
                 }
                 response["msg"] = "Username already exists" if domaincontroller.code == "user_exists" else "Unknown error"
-            print(">>>>Odgovor od servera: ", response)
             await websocket.send(json.dumps(response))
 
             if domaincontroller.response_ok:
@@ -56,7 +51,6 @@ async def handler(websocket):
                 }
                 for id, clientsocket in active_users.items():
                     if clientsocket != websocket:
-                        print("\n>>>> Odgovor: ", response)
                         await clientsocket.send(json.dumps(response))
 
         if message_dict["action"] == "login":
@@ -72,7 +66,6 @@ async def handler(websocket):
                     "action": "error"
                 }
                 response["msg"] = domaincontroller.code
-                print("Odgovor od servera: ", response)
 
             await websocket.send(json.dumps(response))
             if domaincontroller.response_ok:
@@ -81,8 +74,8 @@ async def handler(websocket):
                     "user": user
                 }
                 for id, clientsocket in active_users.items():
+                    # inform all users that new user logged in
                     if clientsocket != websocket:
-                        print("\n>>>> Obavestenje za sve - novi user: ", response)
                         await clientsocket.send(json.dumps(response))
 
         if message_dict["action"] == "on-load":
@@ -103,30 +96,25 @@ async def handler(websocket):
                 }
             else:
                 response = {"action": "error", "msg": "Session not valid"}
-            print(">>>>Odgovor od servera: ", response)
             await websocket.send(json.dumps(response))
 
         if message_dict["action"] == "logout":
             # change status of the user in DB
-            print(">>>> klijent se gasi: ", message_dict)
             deactivated = domaincontroller.deactivate_user(message_dict["userid"])
             if deactivated:
                 # destroy session
                 del sessions[message_dict["session"]]
                 del active_users[message_dict["userid"]]
-                print("\n\n>>Aktivne sesije: ", sessions)
-                print("Aktivni useri: ", active_users)
+
                 # inform others
                 response = {
                     "action": "logout",
                     "userid": message_dict["userid"]
                 }
                 for socket in active_users.values():
-                    print(">>>>Inform everybody GASI SE!!! ==> ", socket)
                     await socket.send(json.dumps(response))
 
         if message_dict["action"] == "load-friend":
-            print("\n>>>> OD CLIENT-a load-friend: ", message_dict)
             if message_dict["session"] in sessions:
                 response = {}
                 # fill the response with friend's data
@@ -135,12 +123,10 @@ async def handler(websocket):
                     sgn = load_conversation(message_dict["userid"], message_dict["current_id"], response)
             else:
                 response = {"action": "error", "msg": "Session not valid"}
-            print("==========VELIKI RESPONSE==========: \n",response)
             await websocket.send(json.dumps(response))
 
         if message_dict["action"] == "message-sent":
             # current websocket is sending message to a friend
-            print("\n>>>> OD CLIENT-b message :: ", message_dict)
             if message_dict["session"] in sessions:
                 sgn = domaincontroller.received_message(message_dict["from"],
                                                         message_dict["to"],

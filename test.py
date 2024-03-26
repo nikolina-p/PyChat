@@ -1,14 +1,23 @@
 from domain import User, Message
+from domaincontroller import DomainController
 import sqlite3
 from dbcontroler import UserDBController
 import os
 import datetime
 
-
 def add_user():
-    user = User("test", "1234")
-    user.new()
-    print(user)
+    user = User(username="test2", password="1234")
+    user.create()
+
+
+def fill_up_users():
+    usernames = ["Mario", "Luigi", "Bowser", "Princes", "Toad"]
+    password = "1234"
+    for name in usernames:
+        user = User()
+        user.username = name
+        user.password = "1234"
+        user.create()
 
 def select():
     conn = sqlite3.connect('pychat.db')
@@ -23,7 +32,7 @@ def is_registered():
     print(user.is_registered())
 
 def signup():
-    user = User("new3", "1234")
+    user = User(username="test", password="1234")
     print("Signup: ", user.signup())
 
 def print_users():
@@ -65,6 +74,7 @@ def update():
     dbc = UserController()
     dbc.update(12, username="bowser", password="1111")
 
+
 def fill_up_messages():
     lines = ""
     with open("shakespeare.txt", 'r') as f:
@@ -79,10 +89,13 @@ def fill_up_messages():
     cursor.execute("SELECT id FROM user")
     ids = cursor.fetchall()
 
+    delete = "DELETE FROM message"
     insert = f"INSERT INTO message (sender_id, recipient_id, message, date) VALUES (?, ?, ?, ?)"
 
-    for x in range(10):
-        i = 0
+    cursor.execute(delete)
+
+    i = 0
+    for x in range(5): # make 5 messages for each
         for sender in ids:
             for receiver in ids:
                 if sender != receiver:
@@ -129,6 +142,13 @@ def get_conversations():
     for c in conv:
         print(c)
 
+def sign_up_domain():
+    dc = DomainController()
+    ret = dc.signup("niko", "1234")
+    print(ret)
+
+
+
 
 if __name__ == "__main__":
     print("Hello World")
@@ -137,13 +157,16 @@ if __name__ == "__main__":
     #fix_message_primary_key()
     #delete_username()
     #update()
+    #fill_up_users()
     #print_users()
     #query_db()
-    unactivate_users()
-    #fill_up_messages()
-    #select_messages()
+    #unactivate_users()
+    fill_up_messages()
+    select_messages()
     #empty_message_table()
     #get_conversations()
+
+    #sign_up_domain()
 
 
 

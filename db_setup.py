@@ -1,5 +1,6 @@
 import sqlite3
 
+db_name = "pychat.db"
 
 def create_database(name: str):
     con = sqlite3.connect(name)
@@ -24,5 +25,5 @@ def check_database(name: str):
 
 
 if __name__ == "__main__":
-    # create_database("pychat.db")
-    check_database("pychat.db")
+    create_database(db_name)
+    check_database(db_name)

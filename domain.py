@@ -93,6 +93,3 @@ class Message:
 
     def get_conversation(self, user_1: User=None, user_2: User=None) -> dict:
         return self.db_controller.get_conversation(user_1.id, user_2.id)
-
-
-

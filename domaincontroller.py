@@ -101,7 +101,6 @@ class DomainController:
         if user_1.get_user(id=id_1) and user_2.get_user(id=id_2):
             msg = Message()
             response = msg.get_conversation(user_1, user_2)
-            print("\n\n>>>>>>>>RESPONSE: ", response)
 
             msg_dict = {}
             if response != -1:
@@ -120,7 +119,3 @@ class DomainController:
 
 if __name__ == "__main__":
     controller = DomainController()
-    x = controller.hash_id(5)
-    print(x)
-    y = controller.unhash_secret(x)
-    print(y)
