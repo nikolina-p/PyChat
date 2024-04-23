@@ -3,7 +3,11 @@ import datetime
 from domain import User, Message
 
 
-class DomainController:
+class Controller:
+    """
+    This class holds the application logic and responds to user's actions/requests.
+    It creates domain objects and manipulates them.
+    """
     def __init__(self):
         self.response_ok = True
         self.code = 0

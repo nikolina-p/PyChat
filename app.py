@@ -3,13 +3,13 @@
 import asyncio
 import websockets
 import json
-from domaincontroller import DomainController
+from controller import Controller
 import uuid
 
 
 sessions = {}    # dictionary {sessionId: user ID}
 active_users = {}    # {user_id: socket}
-domaincontroller = DomainController()
+controller = Controller()
 counter = 0  # counts the number of websockets created - for control purposes
 current_user = None
 
@@ -29,8 +29,8 @@ async def handler(websocket):
         message_dict = json.loads(message)
 
         if message_dict["action"] == "signup":
-            user = domaincontroller.signup(message_dict["username"], message_dict["password"])
-            if domaincontroller.response_ok:
+            user = controller.signup(message_dict["username"], message_dict["password"])
+            if controller.response_ok:
                 sessions[session_id] = user["id"]
 
                 response = {
@@ -41,10 +41,10 @@ async def handler(websocket):
                 response = {
                     "action": "error",
                 }
-                response["msg"] = "Username already exists" if domaincontroller.code == "user_exists" else "Unknown error"
+                response["msg"] = "Username already exists" if controller.code == "user_exists" else "Unknown error"
             await websocket.send(json.dumps(response))
 
-            if domaincontroller.response_ok:
+            if controller.response_ok:
                 response = {
                     "action": "new-login",
                     "user": user
@@ -54,8 +54,8 @@ async def handler(websocket):
                         await clientsocket.send(json.dumps(response))
 
         if message_dict["action"] == "login":
-            user = domaincontroller.login(message_dict["username"], message_dict["password"])
-            if domaincontroller.response_ok:
+            user = controller.login(message_dict["username"], message_dict["password"])
+            if controller.response_ok:
                 sessions[session_id] = user["id"]
                 response = {
                     "action": "routing",
@@ -65,10 +65,10 @@ async def handler(websocket):
                 response = {
                     "action": "error"
                 }
-                response["msg"] = domaincontroller.code
+                response["msg"] = controller.code
 
             await websocket.send(json.dumps(response))
-            if domaincontroller.response_ok:
+            if controller.response_ok:
                 response = {
                     "action": "new-login",
                     "user": user
@@ -85,8 +85,8 @@ async def handler(websocket):
                 sessions.pop(session_id)    # remove new session_id
                 sessions[valid_session_id] = usr_id
 
-                users = domaincontroller.load_users()
-                current_user = domaincontroller.load_user(usr_id)
+                users = controller.load_users()
+                current_user = controller.load_user(usr_id)
 
                 active_users[current_user["id"]] = websocket
                 response = {
@@ -100,7 +100,7 @@ async def handler(websocket):
 
         if message_dict["action"] == "logout":
             # change status of the user in DB
-            deactivated = domaincontroller.deactivate_user(message_dict["userid"])
+            deactivated = controller.deactivate_user(message_dict["userid"])
             if deactivated:
                 # destroy session
                 del sessions[message_dict["session"]]
@@ -128,7 +128,7 @@ async def handler(websocket):
         if message_dict["action"] == "message-sent":
             # current websocket is sending message to a friend
             if message_dict["session"] in sessions:
-                sgn = domaincontroller.received_message(message_dict["from"],
+                sgn = controller.received_message(message_dict["from"],
                                                         message_dict["to"],
                                                         message_dict["message"])
                 if message_dict["to"] in active_users:
@@ -178,24 +178,24 @@ async def main():
 
 
 def load_user(user_id: int, response: dict) -> bool:
-    user = domaincontroller.load_user(user_id)
-    # messages = domaincontroller.load_messages(message_dict["userid"])
-    if domaincontroller.response_ok:
+    user = controller.load_user(user_id)
+    # messages = controller.load_messages(message_dict["userid"])
+    if controller.response_ok:
         response["action"] = "load-friend"
         response["user"] = user
         return True
     else:
-        response = {"action": "error", "msg": domaincontroller.code}
+        response = {"action": "error", "msg": controller.code}
         return False
 
 def load_conversation(user_id: int, current_id: int, response: dict) -> bool:
     # load the conversation between current user and requested id
-    msg_dict = domaincontroller.load_conversation(current_id, user_id)
-    if domaincontroller.response_ok:
+    msg_dict = controller.load_conversation(current_id, user_id)
+    if controller.response_ok:
         response["conversation"] = msg_dict
         return True
     else:
-        response = {"action": "error", "msg": domaincontroller.code}
+        response = {"action": "error", "msg": controller.code}
     return False
 
 
