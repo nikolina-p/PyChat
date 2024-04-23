@@ -224,7 +224,6 @@ function renderTalkingTo(user) {
   }
 
   let userDiv = document.getElementById(user.id)
-  userDiv.style.color = "#000000"
   // remove new-message-indicator
   userDiv.innerHTML = ""
   userDiv.innerText = user.username
@@ -271,6 +270,9 @@ function addNewMessageIndicator(id) {
 }
 
 function renderConversation(conversation) {
+  const messagesList = document.getElementById("messages-list");
+  messagesList.innerHTML = " "
+
   for (let key in conversation) {
     if (conversation.hasOwnProperty(key)) {
       const msg = conversation[key];
