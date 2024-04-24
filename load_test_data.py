@@ -1,5 +1,5 @@
 import sqlite3
-from domain import User, Message
+from model import User, Message
 import datetime
 
 db_name = "pychat.db"

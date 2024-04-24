@@ -1,6 +1,6 @@
 import datetime
 
-from domain import User, Message
+from model import User, Message
 
 
 class Controller:

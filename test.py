@@ -1,5 +1,5 @@
-from domain import User, Message
-from domaincontroller import DomainController
+from model import User, Message
+from controller import Controller
 import sqlite3
 from dbcontroler import UserDBController
 import os
@@ -143,7 +143,7 @@ def get_conversations():
         print(c)
 
 def sign_up_domain():
-    dc = DomainController()
+    dc = Controller()
     ret = dc.signup("niko", "1234")
     print(ret)
 
@@ -158,11 +158,11 @@ if __name__ == "__main__":
     #delete_username()
     #update()
     #fill_up_users()
-    #print_users()
+    print_users()
     #query_db()
-    #unactivate_users()
-    fill_up_messages()
-    select_messages()
+    unactivate_users()
+    #fill_up_messages()
+    #select_messages()
     #empty_message_table()
     #get_conversations()
 
