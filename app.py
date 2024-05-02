@@ -41,7 +41,7 @@ async def handler(websocket):
                 response = {
                     "action": "error",
                 }
-                response["msg"] = "Username already exists" if controller.code == "user_exists" else "Unknown error"
+                response["msg"] = controller.code
             await websocket.send(json.dumps(response))
 
             if controller.response_ok:
@@ -100,7 +100,7 @@ async def handler(websocket):
 
         if message_dict["action"] == "logout":
             # change status of the user in DB
-            deactivated = controller.deactivate_user(message_dict["userid"])
+            deactivated = controller.logout(message_dict["userid"])
             if deactivated:
                 # destroy session
                 del sessions[message_dict["session"]]

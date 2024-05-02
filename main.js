@@ -227,7 +227,7 @@ function renderTalkingTo(user) {
   // remove new-message-indicator
   userDiv.innerHTML = ""
   userDiv.innerText = user.username
-  userDiv.style.color = "black" 
+  userDiv.style.color = "black"
 }
 
 function textareaFriendNotActive(typingTextarea) {

@@ -1,8 +1,10 @@
 import sqlite3
+import os
+import copy
 
-class dbcontroller:
+class DBController:
     def __init__(self):
-        self.name = "pychat.db"
+        self.name = os.path.join("Database", "pychat.db")
         self.connection = None
         self.cursor = None
 
@@ -12,21 +14,6 @@ class dbcontroller:
             print("Connected to database")
         except sqlite3.Error as e:
             print(f"Error while connecting to {self.name}: ", e.get_message())
-
-    # queries -> list of tuples (query string, values)
-    def execute(self, queries):
-        try:
-            self.cursor = self.connection.cursor()
-            for query, val in queries:
-                if val:
-                    self.cursor.execute(query, val)
-                else:
-                    self.cursor.execute(query)
-            self.connection.commit()
-            return True
-        except sqlite3.Error as e:
-            print(f"Error while executing {query} : ", e)
-            return False
 
     def close(self):
         try:
@@ -38,101 +25,151 @@ class dbcontroller:
         except sqlite3.Error as e:
             print("Error closing connection:", e)
 
-    def delete_all(self, table):
-        query = f"DELETE FROM {table}"
+    def create(self, object):
+        table_name = object.__class__.__name__.lower()
+        fields = ", ".join(tuple(object.__dict__.keys())[1:])
+        placeholders = ", ".join(["?" for _ in object.__dict__.values()][1:])
+        values = tuple(object.__dict__.values())[1:]
+        result = -1
 
         self.db_open()
-        result = self.execute([(query, None)])
+
+        try:
+            query = f"INSERT INTO {table_name} ({fields}) VALUES ({placeholders})"
+            print(query)
+            print(values)
+
+            cursor = self.connection.cursor()
+            cursor.execute(query, values)
+            result = cursor.lastrowid         # set the ID of the new user
+            self.connection.commit()
+
+            print(f"{table_name.capitalize()} created successfully")
+
+        except sqlite3.Error as e:
+            print(f"Error creating {table_name}: {e}")
+
         self.close()
         return result
 
-
-class UserDBController(dbcontroller):
-
-    def create(self, username, pwd, active):
-        query = f"INSERT INTO user (username, password, active) VALUES (?, ?, ?)"
-        values = (username, pwd, active)
-
-        self.db_open()
-
-        if self.execute([(query, values)]):
-            result = self.cursor.lastrowid
-        else:
-            result = -1
-        self.close()
-        return result
-
-    def get_user(self, **kvargs):
-        query = "SELECT * FROM user WHERE "
-        for key, value in kvargs.items():
-            query += f"{key} = '{value}' AND "
-        query = query[:-5]
+    def update(self, object) -> bool:
+        """update the row with same id as object's id"""
+        table_name = object.__class__.__name__.lower()
+        fields = ", ".join([f"{key} = ?" for key in object.__dict__.keys()])
+        placeholders = ", ".join(["?" for _ in object.__dict__])
+        values = tuple(object.__dict__.values())
+        sgn = False
 
         self.db_open()
-        self.execute([(query, None)])
-        result = self.cursor.fetchall()
-        self.close()
-        return result
 
-    def update(self, userid, **fields) -> bool:
-        query = f"UPDATE user SET "
-        for key, val in fields.items():
-            query += f"{key} = '{val}', "
-        query = query[:-2] + f" WHERE id={userid}"
+        try:
+            query = f"UPDATE {table_name} SET {fields} WHERE id={object.id}"
 
-        self.db_open()
-        sgn = self.execute([(query, None)])
+            cursor = self.connection.cursor()
+            cursor.execute(query, values)
+            self.connection.commit()
+
+            if cursor.rowcount > 0:
+                print(f"{table_name.capitalize()} updated successfully")
+                sgn = True
+            else:
+                print(f"No such {table_name.capitalize()} in DB")
+                sgn = False
+
+        except sqlite3.Error as e:
+            print(f"Error updating {table_name}: {e}")
+            sgn = False
+
         self.close()
         return sgn
 
-    def delete(self, **kvargs):
-        query = f"DELETE FROM user WHERE "
-        for key, value in kvargs.items():
-            query += f"{key} = '{value}' AND "
-        query = query[:-5]
+    def find(self, object, **kwargs) -> bool:
+        """returns list of objects that maches keyword arguments"""
+        table_name = object.__class__.__name__.lower()
+        query = f"SELECT * FROM {table_name}"
+
+        if len(kwargs) > 0:
+            query += " WHERE "
+            for key, value in kwargs.items():
+                query += f"{key} = '{value}' AND "
+            query = query[:-5]
+
         self.db_open()
-        sgn = self.execute([(query, None)])
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            rows = cursor.fetchall()
+
+            # MAKE Objects from rows - should be done by model
+            # Get column names from the table
+            """attributes = [description[0] for description in cursor.description]
+
+            for row in rows:
+                _ = copy.copy(object)
+                for i, attr in enumerate(attributes):
+                    _.__dict__[attr] = row[i]
+                result.append(_)"""
+
+        except sqlite3.Error as e:
+            print(f"Error while finding {table_name}: {e}")
+
         self.close()
-        return sgn
+        return rows
 
-
-    def get_all_users(self):
-        query = f"SELECT * FROM user"
-
-        self.db_open()
+    def delete(self, object, **kwargs) -> bool:
+        """
+        deletes the rows that matche keyword arguments
+        if no keyword arguments are passed, it will delete all rows in the table
+        """
+        table_name = object.__class__.__name__.lower()
+        query = f"DELETE FROM {table_name}"
         result = []
-        if self.execute([(query, None)]):
-            result = self.cursor.fetchall()
-        self.close()
 
-        return result
-
-
-class MessageDBController(dbcontroller):
-
-    def create(self, from_id, to_id, message, datetime):
-        create = f"INSERT INTO message (sender_id, recipient_id, message, date) VALUES (?, ?, ?, ?)"
-
-        values = (from_id, to_id, message, datetime)
+        if len(kwargs) > 0:
+            query += " WHERE "
+            for key, value in kwargs.items():
+                query += f"{key} = '{value}' AND "
+            query = query[:-5]
 
         self.db_open()
 
-        if self.execute([(create, values)]):
-            result = self.cursor.lastrowid
-        else:
-            result = -1
-        self.close()
-        return result
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(query)
+            self.connection.commit()
 
-    def get_conversation(self, user_1, user_2):
-        query = (f"SELECT * FROM message WHERE (sender_id = ? and recipient_id = ?) "
-                 f"or (sender_id = ? and recipient_id = ?) order by id ASC ")
-        values = (user_1, user_2, user_2, user_1)
+            if cursor.rowcount > 0:
+                print(f"{table_name} deleted successfully.")
+            else:
+                print(f"No such {table_name} found.")
+        except sqlite3.Error as e:
+            print(f"Error while deleting from {table_name}")
+
+        self.close()
+
+
+class UserDBController(DBController):
+    pass
+
+
+class MessageDBController(DBController):
+
+    def get_conversation(self, userid_1, userid_2):
+        query = (f"SELECT * FROM message WHERE (sender = ? and recipient = ?) "
+                 f"or (sender = ? and recipient = ?) order by id ASC ")
+        values = (userid_1, userid_2, userid_2, userid_1)
 
         self.db_open()
-        if self.execute([(query, values)]):
-            result = self.cursor.fetchall()
-        else:
+
+        try:
+            connection = self.connection.cursor()
+            result = connection.execute(query, values)
+            result = result.fetchall()
+
+        except sqlite3.Error as e:
+            print(f"Error while getting messages from user ID {userid_1}")
             result = -1
+
         self.close()
         return result
