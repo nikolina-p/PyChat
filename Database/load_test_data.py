@@ -1,5 +1,4 @@
 import sqlite3
-from model import User, Message
 import datetime
 import os
 
@@ -34,14 +33,12 @@ def fill_up_users():
     usernames = ["Mario", "Luigi", "Bowser", "Princes", "Toad"]
     password = "1234"
     for name in usernames:
-        user = User()
-        user.username = name
-        user.password = "1234"
-        insert_user(user)
+        password = "1234"
+        insert_user(name, password)
 
 
-def insert_user(user):
-    query = f"INSERT INTO user (username, password) VALUES ('{user.username}', '{user.password}')"
+def insert_user(username, password):
+    query = f"INSERT INTO user (username, password) VALUES ('{username}', '{password}')"
 
     try:
        conn = sqlite3.connect(db_name)
