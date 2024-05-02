@@ -1,4 +1,4 @@
-from dbcontroler import UserDBController, MessageDBController
+from repository import UserRepository, MessageRepository
 import datetime
 from abc import ABC, abstractmethod
 
@@ -55,17 +55,17 @@ class UserAdapter():
     """This class adds database functionality to User class -
      it calls database controller class to do the operations with database"""
     def __init__(self):
-        self.db_controller = UserDBController()
+        self.repository = UserRepository()
 
     def create(self, user):
-        result = self.db_controller.create(user)
+        result = self.repository.create(user)
         if result != -1:
             user.id = result
             return True
         return False
 
     def get_user(self, user, **kwargs) -> bool:
-        result = self.db_controller.find(user, **kwargs)   # result is array of User objects
+        result = self.repository.find(user, **kwargs)   # result is array of User objects
         if len(result) == 1:
             user.id = result[0][0]
             user.username = result[0][1]
@@ -78,7 +78,7 @@ class UserAdapter():
             return False
 
     def get_all_users(self):
-        result = self.db_controller.find(User())
+        result = self.repository.find(User())
         users = []
         for user in result:
             users.append(User(user[0], user[1], user[2], user[3]))
@@ -86,7 +86,7 @@ class UserAdapter():
 
     def set_active(self, user, sgn: bool) -> bool:
         user.active = 1 if sgn else 0
-        if self.db_controller.update(user):
+        if self.repository.update(user):
             return True
         else:
             return False
@@ -96,10 +96,10 @@ class MessageAdapter:
     """This class adds database functionality to Message class -
     it calls database controller class to do the operations with database"""
     def __init__(self):
-        self.db_controller = MessageDBController()
+        self.repository = MessageRepository()
 
     def saveMessage(self, msg):    # not refactored
-        id = self.db_controller.create(msg)
+        id = self.repository.create(msg)
         if id != -1:
             msg.id = id
             return True
@@ -107,7 +107,7 @@ class MessageAdapter:
             return False
 
     def get_conversation(self, user_1: User=None, user_2: User=None) -> dict:
-        return self.db_controller.get_conversation(user_1.id, user_2.id)
+        return self.repository.get_conversation(user_1.id, user_2.id)
 
 
 
