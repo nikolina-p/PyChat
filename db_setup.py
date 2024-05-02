@@ -1,13 +1,14 @@
 import sqlite3
+import os
 
-db_name = "pychat.db"
+db_name = os.path.join("Database", "pychat.db")
 
 def create_database(name: str):
     con = sqlite3.connect(name)
     cur = con.cursor()
 
     cur.execute("CREATE TABLE user(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, active INTEGER)")
-    cur.execute("CREATE TABLE message(id INTEGER PRIMARY KEY, sender_id INTEGER, recipient_id INTEGER, message TEXT, date TEXT)")
+    cur.execute("CREATE TABLE message(id INTEGER PRIMARY KEY AUTOINCREMENT, sender INTEGER, recipient INTEGER, content TEXT, date TEXT)")
 
     con.commit()
     con.close()
