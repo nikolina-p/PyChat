@@ -1,8 +1,25 @@
 from dbcontroler import UserDBController, MessageDBController
 import datetime
+from abc import ABC, abstractmethod
 
 
-class User():
+class BaseChat(ABC):
+    @abstractmethod
+    def get_attr_names(self):
+        """to be used in Repository classes;
+        returns names of columns of object's coresponding table in the database"""
+        pass
+
+    @abstractmethod
+    def get_attr_val(self):
+        """to be used in Repository classes;
+        returns values that should be stored in the database, representing object's attributes;
+        if the attribute is container type(User), it will return int id;"""
+        pass
+
+
+
+class User(BaseChat):
     def __init__(self, id: int=-1, username: str="", password: str="", active=0):
         self.id = id
         self.username = username
@@ -12,14 +29,26 @@ class User():
     def __str__(self):
         return f"User {self.id} - {self.username} - {self.password} - {self.active}"
 
+    def get_attr_names(self):
+        return tuple(("id", "username", "password", "active"))
 
-class Message():
+    def get_attr_val(self):
+        return tuple((self.id, self.username, self.password, self.active))
+
+
+class Message(BaseChat):
     def __init__(self, id:int = -1, sender: User=None, recipient: User=None, content: str="", date: datetime=None):
         self.id = id
         self.sender = sender
         self.recipient = recipient
         self.content = content
         self.date = date
+
+    def get_attr_names(self):
+        return tuple(("id", "sender", "recipient", "content", "date"))
+
+    def get_attr_val(self):
+        return tuple((self.id, self.sender.id, self.recipient.id, self.content, self.date))
 
 
 class UserAdapter():

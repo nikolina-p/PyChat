@@ -29,15 +29,13 @@ class DBController:
         table_name = object.__class__.__name__.lower()
         fields = ", ".join(tuple(object.__dict__.keys())[1:])
         placeholders = ", ".join(["?" for _ in object.__dict__.values()][1:])
-        values = tuple(object.__dict__.values())[1:]
+        values = object.get_attr_val()[1:]
         result = -1
 
         self.db_open()
 
         try:
             query = f"INSERT INTO {table_name} ({fields}) VALUES ({placeholders})"
-            print(query)
-            print(values)
 
             cursor = self.connection.cursor()
             cursor.execute(query, values)
