@@ -4,6 +4,7 @@ import datetime
 import os
 
 db_name = os.path.join("Database", "pychat.db")
+test_data = os.path.join("Database", "shakespeare.txt")
 
 def delete_all_users():
     query = "DELETE FROM user"
@@ -69,7 +70,7 @@ def print_users():
 
 def fill_up_messages():
     lines = ""
-    with open("shakespeare.txt", 'r') as f:
+    with open(test_data, 'r') as f:
         lines = f.read()
     messages_str = []
     for line in lines.split("\n"):
