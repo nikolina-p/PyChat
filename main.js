@@ -218,6 +218,9 @@ function renderTalkingTo(user) {
   div.innerText = user.username + " :: "
 
   let typingTextarea = document.getElementById("typing")
+  typingTextarea.value = ""
+  typingTextarea.style.color = 'black';
+  typingTextarea.style.fontStyle = 'normal';
 
   if (user.active == 0) {
     textareaFriendNotActive(typingTextarea)
@@ -227,7 +230,10 @@ function renderTalkingTo(user) {
   // remove new-message-indicator
   userDiv.innerHTML = ""
   userDiv.innerText = user.username
-  userDiv.style.color = "black"
+  if (user.active == 1) {
+    // if username was blue due to new message indicator
+    userDiv.style.color = "black"
+  }
 }
 
 function textareaFriendNotActive(typingTextarea) {

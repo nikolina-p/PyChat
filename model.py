@@ -20,7 +20,7 @@ class BaseChat(ABC):
 
 
 class User(BaseChat):
-    def __init__(self, id: int=-1, username: str="", password: str="", active=0):
+    def __init__(self, id: int=-1, username: str="", password: str="", active=1):
         self.id = id
         self.username = username
         self.password = password
