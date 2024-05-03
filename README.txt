@@ -31,7 +31,8 @@ WHAT WAS DONE:
     each server call.
     - when user closes the chat window, session ID gets destroyed
 4. Exchanging messages:
-    - picking the friend from the user list and sending him/her a message; shows message history; shows "new message" notification when message is received from a friend that user is not talking to at the moment; if user is not active messages are delivered upon login - sender is informed about late delivery
+    - picking the friend from the user list and sending him/her a message; shows message history; shows "new message" notification when message is received from a friend that user is not talking to at the moment;
+    if user is not active messages are delivered upon login - sender is informed about late delivery
 
 
 SPACE FOR IMPROVEMENT
